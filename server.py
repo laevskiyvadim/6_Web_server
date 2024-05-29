@@ -1,31 +1,21 @@
-import socket
+from http.server import SimpleHTTPRequestHandler
+import socketserver
 
-sock = socket.socket()
+# Указываем рабочую директорию для сервера
+directory = '.'  # Текущая директория
 
-try:
-    sock.bind(('', 80))
-    print("Using port 80")
-except OSError:
-    sock.bind(('', 8080))
-    print("Using port 8080")
+# Задаем адрес и порт сервера
+host = 'localhost'
+port = 80
 
-sock.listen(5)
+# Создаем класс обработчика запросов, наследуясь от SimpleHTTPRequestHandler
+class CustomHandler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=directory, **kwargs)
 
-conn, addr = sock.accept()
-print("Connected", addr)
+# Создаем сервер с указанным хостом и портом
+server = socketserver.TCPServer((host, port), CustomHandler)
 
-data = conn.recv(8192)
-msg = data.decode()
-
-print(msg)
-
-resp = """HTTP/1.1 200 OK
-Server: SelfMadeServer v0.0.1
-Content-type: text/html
-Connection: close
-
-Hello, webworld!"""
-
-conn.send(resp.encode())
-
-conn.close()
+# Запускаем сервер и оставляем его работать
+print(f"Сервер запущен по адресу http://{host}:{port}")
+server.serve_forever()
